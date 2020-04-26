@@ -48,9 +48,9 @@ function configure_hive() {
 
     local var
     local value
-    
+
     echo "Configuring $module"
-    for c in `printenv | perl -sne 'print "$1 " if m/^${envPrefix}_(.+?)=.*/' -- -envPrefix=$envPrefix`; do 
+    for c in `printenv | perl -sne 'print "$1 " if m/^${envPrefix}_(.+?)=.*/' -- -envPrefix=$envPrefix`; do
         name=`echo ${c} | perl -pe 's/___/-/g; s/__/_/g; s/_/./g'`
         var="${envPrefix}_${c}"
         value=${!var}
@@ -66,9 +66,9 @@ function configure() {
 
     local var
     local value
-    
+
     echo "Configuring $module"
-    for c in `printenv | perl -sne 'print "$1 " if m/^${envPrefix}_(.+?)=.*/' -- -envPrefix=$envPrefix`; do 
+    for c in `printenv | perl -sne 'print "$1 " if m/^${envPrefix}_(.+?)=.*/' -- -envPrefix=$envPrefix`; do
         name=`echo ${c} | perl -pe 's/___/-/g; s/__/@/g; s/_/./g; s/@/_/g;'`
         var="${envPrefix}_${c}"
         value=${!var}
@@ -85,6 +85,8 @@ configure /etc/hadoop/kms-site.xml kms KMS_CONF
 #configure /etc/hadoop/mapred-site.xml mapred MAPRED_CONF
 
 configure_hive /spark/conf/hive-site.xml hive HIVE_SITE_CONF
+
+configure_spark /spark/conf/spark-defaults.conf spark SPARK_DEFAULTS_CONF
 
 if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     echo "Configuring for multihomed network"
