@@ -1,4 +1,4 @@
-FROM trivadis/apache-spark-base:2.4.6-hadoop2.8
+FROM trivadis/apache-spark-base:2.4.7-hadoop2.8
 
 MAINTAINER Guido Schmutz <guido.schmutz@trivadis.com>
 
