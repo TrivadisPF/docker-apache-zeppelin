@@ -3,11 +3,11 @@ FROM trivadis/apache-spark-base:2.4.7-hadoop2.8
 MAINTAINER Guido Schmutz <guido.schmutz@trivadis.com>
 
 ENV ZEPPELIN_VERSION 0.8.2
-ENV HADOOP_VERSION 3.1.3
+ENV HADOOP_VERSION 3.1.4
 
 
 RUN apk update && apk upgrade && \
-    apk add --no-cache bash git openssh		
+    apk add --no-cache bash git openssh	gettext
 
 RUN set -x \
     && curl -fSL "http://www-eu.apache.org/dist/zeppelin/zeppelin-${ZEPPELIN_VERSION}/zeppelin-${ZEPPELIN_VERSION}-bin-all.tgz" -o /tmp/zeppelin.tgz \
@@ -16,11 +16,9 @@ RUN set -x \
     && mv /opt/zeppelin-* /opt/zeppelin \
     && rm /tmp/zeppelin.tgz
 
-# install s3cmd
-RUN git clone https://github.com/s3tools/s3cmd.git /tmp/s3cmd \
-	&& cd /tmp/s3cmd \
-	&& python setup.py install \
-	&& rm -rf /tmp/s3cmd
+# install s3cmd and awscli
+RUN pip install --upgrade pip awscli s3cmd && \
+    mkdir /root/.aws
 
 # install hadoop client
 RUN curl -O https://dist.apache.org/repos/dist/release/hadoop/common/KEYS

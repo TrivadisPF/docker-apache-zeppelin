@@ -164,4 +164,6 @@ do
     wait_for_it ${i}
 done
 
+envsubst < /root/.s3cfg.template > /root/.s3cfg
+
 exec $@
