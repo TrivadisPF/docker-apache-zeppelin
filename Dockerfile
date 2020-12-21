@@ -1,9 +1,9 @@
-FROM trivadis/apache-spark-base:3.0.1-hadoop2.10
+FROM trivadis/apache-spark-base:3.0.1-hadoop3.2
 
 MAINTAINER Guido Schmutz <guido.schmutz@trivadis.com>
 
 ENV ZEPPELIN_VERSION 0.8.2
-ENV HADOOP_VERSION 3.1.4
+ENV HADOOP_VERSION 3.2.1
 
 
 RUN apk update && apk upgrade && \
