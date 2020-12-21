@@ -2,7 +2,7 @@ FROM trivadis/apache-spark-base:3.0.1-hadoop3.2
 
 MAINTAINER Guido Schmutz <guido.schmutz@trivadis.com>
 
-ENV ZEPPELIN_VERSION 0.8.2
+ENV ZEPPELIN_VERSION 0.9.0-preview1
 ENV HADOOP_VERSION 3.2.1
 
 
@@ -35,8 +35,6 @@ RUN set -x \
     && rm /tmp/hadoop.tar.gz*
 
 RUN ln -s /opt/hadoop-$HADOOP_VERSION/etc/hadoop /etc/hadoop
-
-RUN mkdir /opt/hadoop-$HADOOP_VERSION/logs
 
 #RUN mkdir /hadoop-data
 
