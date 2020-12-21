@@ -2,7 +2,7 @@ FROM trivadis/apache-spark-base:3.0.1-hadoop3.2
 
 MAINTAINER Guido Schmutz <guido.schmutz@trivadis.com>
 
-ENV ZEPPELIN_VERSION 0.9.0-preview1
+ENV ZEPPELIN_VERSION 0.9.0-preview2
 ENV HADOOP_VERSION 3.2.1
 
 
