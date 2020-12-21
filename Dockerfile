@@ -36,10 +36,6 @@ RUN set -x \
 
 RUN ln -s /opt/hadoop-$HADOOP_VERSION/etc/hadoop /etc/hadoop
 
-RUN mkdir /opt/hadoop-$HADOOP_VERSION/logs
-
-#RUN mkdir /hadoop-data
-
 ENV HADOOP_PREFIX=/opt/hadoop-$HADOOP_VERSION
 ENV HADOOP_CONF_DIR=/etc/hadoop
 ENV MULTIHOMED_NETWORK=1
