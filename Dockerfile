@@ -1,56 +1,135 @@
-FROM trivadis/apache-spark-base:3.0.1-hadoop3.2
+FROM maven:3.5-jdk-8 as builder
 
-MAINTAINER Guido Schmutz <guido.schmutz@trivadis.com>
+ENV ZEPPELIN_VERSION=0.9.0-preview2
 
-ENV ZEPPELIN_VERSION 0.9.0-preview2
-ENV HADOOP_VERSION 3.2.1
+ARG ZEPPELIN_BUILD_NAME='without-hadoop'
+
+ARG ZEPPELIN_SOURCE=/tmp/zeppelin/src
+ARG ZEPPELIN_SRC_URL=https://github.com/apache/zeppelin/archive/v${ZEPPELIN_VERSION}.tar.gz
+
+# Allow npm and bower to run with root privileges
+# 	Example with doesn't compile all interpreters
+#		 mvn -B package -DskipTests -Pbuild-distr -Pspark-3.0 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-angular -pl '!groovy,!submarine,!livy,!hbase,!pig,!file,!flink,!ignite,!kylin,!lens' && \
+RUN mkdir -p ${ZEPPELIN_SOURCE} \
+    && curl -sL ${ZEPPELIN_SRC_URL} | tar -xz -C ${ZEPPELIN_SOURCE} --strip-component=1 \
+    && cd ${ZEPPELIN_SOURCE} \
+    && echo "unsafe-perm=true" > ~/.npmrc \
+    && echo '{ "allow_root": true }' > ~/.bowerrc \
+    && mvn -B package -DskipTests -Pbuild-distr -Pspark-3.0 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-angular \
+    && mv /${ZEPPELIN_SOURCE}/zeppelin-distribution/target/zeppelin-*/zeppelin-* /opt/zeppelin/ \
+    # Removing stuff saves time, because docker creates a temporary layer
+    && rm -rf ~/.m2 \
+    && rm -rf ${ZEPPELIN_SOURCE}
 
 
-RUN apk update && apk upgrade && \
-    apk add --no-cache bash git openssh	gettext
+FROM ubuntu:16.04
+MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
-RUN set -x \
-    && curl -fSL "http://www-eu.apache.org/dist/zeppelin/zeppelin-${ZEPPELIN_VERSION}/zeppelin-${ZEPPELIN_VERSION}-bin-all.tgz" -o /tmp/zeppelin.tgz \
-    && mkdir -p /opt \
-    && tar -xzvf /tmp/zeppelin.tgz -C /opt/ \
-    && mv /opt/zeppelin-* /opt/zeppelin \
-    && rm /tmp/zeppelin.tgz
+COPY --from=builder /opt/zeppelin /opt/zeppelin
 
-# install s3cmd and awscli
-RUN pip install --upgrade pip awscli s3cmd && \
-    mkdir /root/.aws
+ENV ZEPPELIN_VERSION="0.9.0-preview2"
 
-# install hadoop client
-RUN curl -O https://dist.apache.org/repos/dist/release/hadoop/common/KEYS
+ENV LOG_TAG="[ZEPPELIN_${ZEPPELIN_VERSION}]:" \
+    Z_HOME="/opt/zeppelin" \
+    LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    ZEPPELIN_ADDR="0.0.0.0"
 
-RUN gpg --import KEYS
+RUN echo "$LOG_TAG update and install basic packages" && \
+    apt-get -y update && \
+    apt-get install -y locales && \
+    locale-gen $LANG && \
+    apt-get install -y software-properties-common && \
+    apt -y autoclean && \
+    apt -y dist-upgrade && \
+    apt-get install -y build-essential
 
-ENV HADOOP_URL https://www.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz
+RUN echo "$LOG_TAG install tini related packages" && \
+    apt-get install -y wget curl grep sed dpkg && \
+    TINI_VERSION=`curl https://github.com/krallin/tini/releases/latest | grep -o "/v.*\"" | sed 's:^..\(.*\).$:\1:'` && \
+    curl -L "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" > tini.deb && \
+    dpkg -i tini.deb && \
+    rm tini.deb
 
-RUN set -x \
-    && curl -fSL "$HADOOP_URL" -o /tmp/hadoop.tar.gz \
-    && curl -fSL "$HADOOP_URL.asc" -o /tmp/hadoop.tar.gz.asc \
-    && gpg --verify /tmp/hadoop.tar.gz.asc \
-    && tar -xvf /tmp/hadoop.tar.gz -C /opt/ \
-    && rm /tmp/hadoop.tar.gz*
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+RUN echo "$LOG_TAG Install java8" && \
+    apt-get -y update && \
+    apt-get install -y openjdk-8-jdk && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN ln -s /opt/hadoop-$HADOOP_VERSION/etc/hadoop /etc/hadoop
+# should install conda first before numpy, matploylib since pip and python will be installed by conda
+RUN echo "$LOG_TAG Install miniconda3 related packages" && \
+    apt-get -y update && \
+    apt-get install -y bzip2 ca-certificates \
+    libglib2.0-0 libxext6 libsm6 libxrender1 \
+    git mercurial subversion && \
+    echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
+    wget --quiet https://repo.continuum.io/miniconda/Miniconda3-4.6.14-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh
 
-#RUN mkdir /hadoop-data
+ENV PATH /opt/conda/bin:$PATH
 
-ENV HADOOP_PREFIX=/opt/hadoop-$HADOOP_VERSION
-ENV HADOOP_CONF_DIR=/etc/hadoop
-ENV MULTIHOMED_NETWORK=1
-ENV USER=root
-ENV PATH $HADOOP_PREFIX/bin/:$PATH
+RUN echo "$LOG_TAG Install python related packages" && \
+    apt-get -y update && \
+    apt-get install -y python-dev python-pip && \
+    apt-get install -y gfortran && \
+    # numerical/algebra packages
+    apt-get install -y libblas-dev libatlas-dev liblapack-dev && \
+    # font, image
+    apt-get install -y libpng-dev libfreetype6-dev libxft-dev && \
+    # for tkinter
+    apt-get install -y python-tk libxml2-dev libxslt-dev zlib1g-dev && \
+    hash -r && \
+    conda config --set always_yes yes --set changeps1 no && \
+    conda update -q conda && \
+    conda info -a && \
+    conda config --add channels conda-forge && \
+    pip install -q pycodestyle==2.5.0 && \
+    pip install -q numpy==1.17.3 pandas==0.25.0 scipy==1.3.1 grpcio==1.19.0 bkzep==0.6.1 hvplot==0.5.2 protobuf==3.10.0 pandasql==0.7.3 ipython==7.8.0 matplotlib==3.0.3 ipykernel==5.1.2 jupyter_client==5.3.4 bokeh==1.3.4 panel==0.6.0 holoviews==1.12.3 seaborn==0.9.0 plotnine==0.5.1 intake==0.5.3 intake-parquet==0.2.2 altair==3.2.0 pycodestyle==2.5.0 apache_beam==2.15.0
 
-# ENV SPARK_SUBMIT_OPTIONS "--jars /opt/zeppelin/sansa-examples-spark-2018-06.jar"
-ENV SPARK_HOME /spark
+# RUN echo "$LOG_TAG Install R related packages" && \
+#     echo "PATH: $PATH" && \
+#     ls /opt/conda/bin && \
+#     echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" | tee -a /etc/apt/sources.list && \
+#     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 51716619E084DAB9 && \
+#     apt-get -y update && \
+#     apt-get -y --allow-unauthenticated install r-base r-base-dev && \
+#     R -e "install.packages('evaluate', repos = 'https://cloud.r-project.org')" && \
+#     R -e "install.packages('knitr', repos='http://cran.us.r-project.org')" && \
+#     R -e "install.packages('ggplot2', repos='http://cran.us.r-project.org')" && \
+#     R -e "install.packages('googleVis', repos='http://cran.us.r-project.org')" && \
+#     R -e "install.packages('data.table', repos='http://cran.us.r-project.org')" && \
+#     R -e "install.packages('IRkernel', repos = 'https://cloud.r-project.org');IRkernel::installspec()" && \
+#     R -e "install.packages('shiny', repos = 'https://cloud.r-project.org')" && \
+#     # for devtools, Rcpp
+#     apt-get -y install libcurl4-gnutls-dev libssl-dev && \
+#     R -e "install.packages('devtools', repos='http://cran.us.r-project.org')" && \
+#     R -e "install.packages('Rcpp', repos='http://cran.us.r-project.org')" && \
+#     Rscript -e "library('devtools'); library('Rcpp'); install_github('ramnathv/rCharts')"
 
-WORKDIR /opt/zeppelin
+RUN echo "$LOG_TAG Cleanup" && \
+    apt-get autoclean && \
+    apt-get clean
 
-ADD entrypoint.sh /entrypoint.sh
-RUN chmod a+x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+RUN chown -R root:root ${Z_HOME} && \
+    mkdir -p ${Z_HOME}/logs ${Z_HOME}/run ${Z_HOME}/webapps && \
+    # Allow process to edit /etc/passwd, to create a user entry for zeppelin
+    chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
+    # Give access to some specific folders
+    chmod -R 775 "${Z_HOME}/logs" "${Z_HOME}/run" "${Z_HOME}/notebook" "${Z_HOME}/conf" && \
+    # Allow process to create new folders (e.g. webapps)
+    chmod 775 ${Z_HOME}
 
-CMD ["/opt/zeppelin/bin/zeppelin.sh"]
+COPY log4j.properties ${Z_HOME}/conf/
+COPY log4j_docker.properties ${Z_HOME}/conf/
+
+USER 1000
+
+EXPOSE 8080
+
+ENTRYPOINT [ "/usr/bin/tini", "--" ]
+WORKDIR ${Z_HOME}
+CMD ["bin/zeppelin.sh"]
+
+
