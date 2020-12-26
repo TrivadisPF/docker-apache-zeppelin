@@ -154,7 +154,7 @@ EXPOSE 8080
 COPY log4j.properties ${ZEPPELIN_HOME}/conf/
 COPY log4j_docker.properties ${ZEPPELIN_HOME}/conf/
 
-COPY conf.templates conf.templates
+COPY conf.templates ${ZEPPELIN_HOME}/conf.templates
 
 COPY hive-site.xml ${SPARK_HOME}/conf/
 COPY spark-env.sh ${SPARK_HOME}/conf/

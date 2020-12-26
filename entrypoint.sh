@@ -77,6 +77,24 @@ function configure() {
     done
 }
 
+function replace_env_config_if_not_exists {
+  local conf_name=$1
+  local envs_to_replace=$2
+  if [ ! -r conf/$conf_name ]; then
+    echo "$conf_name does not exist, creating it"
+    envsubst $envs_to_replace < conf.templates/$conf_name.template > conf/$conf_name
+  else
+    echo "$conf_name already exists, not overwriting"
+  fi
+}
+
+function replace_env_config {
+  local conf_name=$1
+  local envs_to_replace=$2
+  echo "creating $conf_name"
+  envsubst $envs_to_replace < conf.templates/$conf_name.template > conf/$conf_name
+}
+
 configure /etc/hadoop/core-site.xml core CORE_CONF
 configure /etc/hadoop/hdfs-site.xml hdfs HDFS_CONF
 configure /etc/hadoop/yarn-site.xml yarn YARN_CONF
@@ -87,6 +105,9 @@ configure /etc/hadoop/kms-site.xml kms KMS_CONF
 configure_hive /spark/conf/hive-site.xml hive HIVE_SITE_CONF
 
 configure_spark /spark/conf/spark-defaults.conf spark SPARK_DEFAULTS_CONF
+
+replace_env_config zeppelin-env.sh
+replace_env_config shiro.ini
 
 if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     echo "Configuring for multihomed network"
