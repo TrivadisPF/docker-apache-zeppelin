@@ -19,8 +19,8 @@
 # List of users with their password allowed to access Zeppelin.
 # To use a different strategy (LDAP / Database / ...) check the shiro doc at http://shiro.apache.org/configuration.html#Configuration-INISections
 # To enable admin user, uncomment the following line and set an appropriate password.
-#admin = password1, admin
-user1 = password2, role1, role2
+admin = $ZEPPELIN_ADMIN_PASSWORD, admin
+user1 = $ZEPPELIN_ADMIN_PASSWORD, role1, role2
 user2 = password3, role3
 user3 = password4, role2
 
@@ -69,21 +69,6 @@ user3 = password4, role2
 #knoxJwtRealm.groupPrincipalMapping = group.principal.mapping
 #knoxJwtRealm.principalMapping = principal.mapping
 #authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter
-
-### A sample for configuring Kerberos Realm
-# krbRealm = org.apache.zeppelin.realm.kerberos.KerberosRealm
-# krbRealm.principal = HTTP/zeppelin.fqdn.domain.com@EXAMPLE.COM
-# krbRealm.keytab = /etc/security/keytabs/spnego.service.keytab
-# krbRealm.nameRules = DEFAULT
-# krbRealm.signatureSecretFile = /etc/security/http_secret
-# krbRealm.tokenValidity = 36000
-# krbRealm.cookieDomain = domain.com
-# krbRealm.cookiePath = /
-# krbRealm.logout = /logout
-# krbRealm.logoutAPI = true
-# krbRealm.providerUrl = https://domain.example.com/
-# krbRealm.redirectParam = originalUrl
-# authc = org.apache.zeppelin.realm.kerberos.KerberosAuthenticationFilter
 
 sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
 
