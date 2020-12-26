@@ -1,6 +1,6 @@
 FROM maven:3.5-jdk-8 as builder
 
-ENV ZEPPELIN_VERSION=0.9.0-preview2
+ENV ZEPPELIN_VERSION=0.9.0-docker
 
 ARG ZEPPELIN_BUILD_NAME='without-hadoop'
 
@@ -9,13 +9,13 @@ ARG ZEPPELIN_SRC_URL=https://github.com/apache/zeppelin/archive/v${ZEPPELIN_VERS
 
 # Allow npm and bower to run with root privileges
 # 	Example with doesn't compile all interpreters
-#		 mvn -B package -DskipTests -Pbuild-distr -Pspark-3.0 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-angular -pl '!groovy,!submarine,!livy,!hbase,!pig,!file,!flink,!ignite,!kylin,!lens' && \
+#		 mvn -B package -DskipTests -Pbuild-distr -Pspark-3.0 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-angular -pl 's!submarine,!livy,!hbase,!pig,!file,!flink,!ignite,!kylin,!lens' && \
 RUN mkdir -p ${ZEPPELIN_SOURCE} \
     && curl -sL ${ZEPPELIN_SRC_URL} | tar -xz -C ${ZEPPELIN_SOURCE} --strip-component=1 \
     && cd ${ZEPPELIN_SOURCE} \
     && echo "unsafe-perm=true" > ~/.npmrc \
     && echo '{ "allow_root": true }' > ~/.bowerrc \
-    && mvn -B package -DskipTests -Pbuild-distr -Pspark-3.0 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-angular \
+    && mvn -B package -DskipTests -Pbuild-distr -Pspark-3.0 -Pinclude-hadoop -Phadoop3 -Dhadoop.version=3.2.1 -Pspark-scala-2.12 -Pweb-angular \
     && mv /${ZEPPELIN_SOURCE}/zeppelin-distribution/target/zeppelin-*/zeppelin-* /opt/zeppelin/ \
     # Removing stuff saves time, because docker creates a temporary layer
     && rm -rf ~/.m2 \
@@ -25,12 +25,23 @@ RUN mkdir -p ${ZEPPELIN_SOURCE} \
 FROM ubuntu:16.04
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
-COPY --from=builder /opt/zeppelin /opt/zeppelin
+ENV ZEPPELIN_VERSION="0.9.0-docker"
 
-ENV ZEPPELIN_VERSION="0.9.0-preview2"
+ENV SPARK_VERSION="3.0.1"
+
+ENV HADOOP_VERSION="3.2.1"
+ENV HADOOP_PREFIX=/hadoop-$HADOOP_VERSION
+ENV HADOOP_HOME=$HADOOP_PREFIX
+ENV HADOOP_CONF_DIR=/etc/hadoop
+ENV LD_LIBRARY_PATH=$HADOOP_PREFIX/lib/native
+ENV MULTIHOMED_NETWORK=1
+ENV PATH $HADOOP_PREFIX/bin/:$PATH
+ENV SPARK_DIST_CLASSPATH=$HADOOP_HOME/etc/hadoop/*:$HADOOP_HOME/share/hadoop/common/lib/*:$HADOOP_HOME/share/hadoop/common/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/hdfs/lib/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/yarn/lib/*:$HADOOP_HOME/share/hadoop/yarn/*:$HADOOP_HOME/share/hadoop/mapreduce/lib/*:$HADOOP_HOME/share/hadoop/mapreduce/*:$HADOOP_HOME/share/hadoop/tools/lib/*
+
 
 ENV LOG_TAG="[ZEPPELIN_${ZEPPELIN_VERSION}]:" \
-    Z_HOME="/opt/zeppelin" \
+    ZEPPELIN_HOME="/zeppelin" \
+    SPARK_HOME="/spark" \
     LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8 \
     ZEPPELIN_ADDR="0.0.0.0"
@@ -41,6 +52,7 @@ RUN echo "$LOG_TAG update and install basic packages" && \
     locale-gen $LANG && \
     apt-get install -y software-properties-common && \
     apt -y autoclean && \
+    apt-get install -y gettext-base && \
     apt -y dist-upgrade && \
     apt-get install -y build-essential
 
@@ -56,6 +68,19 @@ RUN echo "$LOG_TAG Install java8" && \
     apt-get -y update && \
     apt-get install -y openjdk-8-jdk && \
     rm -rf /var/lib/apt/lists/*
+
+# install zeppelin
+COPY --from=builder /opt/zeppelin ${ZEPPELIN_HOME}
+
+# install spark
+RUN curl -s http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-without-hadoop.tgz | tar -xz -C . \
+		&& mv spark-* ${SPARK_HOME}
+
+RUN  wget https://www.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
+      && tar -xvf hadoop-${HADOOP_VERSION}.tar.gz -C . \
+      && rm hadoop-${HADOOP_VERSION}.tar.gz
+RUN ln -s /$HADOOP_HOME/etc/hadoop /etc/hadoop
+RUN mkdir /$HADOOP_HOME/logs
 
 # should install conda first before numpy, matploylib since pip and python will be installed by conda
 RUN echo "$LOG_TAG Install miniconda3 related packages" && \
@@ -112,24 +137,35 @@ RUN echo "$LOG_TAG Cleanup" && \
     apt-get autoclean && \
     apt-get clean
 
-RUN chown -R root:root ${Z_HOME} && \
-    mkdir -p ${Z_HOME}/logs ${Z_HOME}/run ${Z_HOME}/webapps && \
+RUN chown -R root:root ${ZEPPELIN_HOME} && \
+    mkdir -p ${ZEPPELIN_HOME}/logs ${ZEPPELIN_HOME}/run ${ZEPPELIN_HOME}/webapps && \
     # Allow process to edit /etc/passwd, to create a user entry for zeppelin
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
     # Give access to some specific folders
-    chmod -R 775 "${Z_HOME}/logs" "${Z_HOME}/run" "${Z_HOME}/notebook" "${Z_HOME}/conf" && \
+    chmod -R 775 "${ZEPPELIN_HOME}/logs" "${ZEPPELIN_HOME}/run" "${ZEPPELIN_HOME}/notebook" "${ZEPPELIN_HOME}/conf" && \
     # Allow process to create new folders (e.g. webapps)
-    chmod 775 ${Z_HOME}
+    chmod 775 ${ZEPPELIN_HOME}
 
-COPY log4j.properties ${Z_HOME}/conf/
-COPY log4j_docker.properties ${Z_HOME}/conf/
 
-USER 1000
+#USER 1000
 
 EXPOSE 8080
 
-ENTRYPOINT [ "/usr/bin/tini", "--" ]
-WORKDIR ${Z_HOME}
+COPY log4j.properties ${ZEPPELIN_HOME}/conf/
+COPY log4j_docker.properties ${ZEPPELIN_HOME}/conf/
+
+COPY conf.templates conf.templates
+
+COPY hive-site.xml ${SPARK_HOME}/conf/
+COPY spark-env.sh ${SPARK_HOME}/conf/
+COPY spark-defaults.conf ${SPARK_HOME}/conf/
+
+WORKDIR ${ZEPPELIN_HOME}
+
+ADD entrypoint.sh /entrypoint.sh
+RUN chmod a+x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
 CMD ["bin/zeppelin.sh"]
 
 
