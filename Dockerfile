@@ -15,7 +15,7 @@ RUN mkdir -p ${ZEPPELIN_SOURCE} \
     && cd ${ZEPPELIN_SOURCE} \
     && echo "unsafe-perm=true" > ~/.npmrc \
     && echo '{ "allow_root": true }' > ~/.bowerrc \
-    && mvn -B package -DskipTests -Pbuild-distr -Pspark-3.0 -Pinclude-hadoop -Phadoop3 -Dhadoop.version=3.2.1 -Pspark-scala-2.12 -Pweb-angular \
+    && mvn -B package -DskipTests -Pbuild-distr -Pspark-3.0 -Pinclude-hadoop -Phadoop3 -Dhadoop.version=3.2.1 -Pscala-2.12 -Pweb-angular \
     && mv /${ZEPPELIN_SOURCE}/zeppelin-distribution/target/zeppelin-*/zeppelin-* /opt/zeppelin/ \
     # Removing stuff saves time, because docker creates a temporary layer
     && rm -rf ~/.m2 \
