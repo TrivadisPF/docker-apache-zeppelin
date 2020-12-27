@@ -1,6 +1,6 @@
 FROM maven:3.5-jdk-8 as builder
 
-ENV ZEPPELIN_VERSION=0.9.0-docker
+ENV ZEPPELIN_VERSION=0.8.2-docker
 
 ARG ZEPPELIN_BUILD_NAME='without-hadoop'
 
@@ -25,7 +25,7 @@ RUN mkdir -p ${ZEPPELIN_SOURCE} \
 FROM ubuntu:16.04
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
-ENV ZEPPELIN_VERSION="0.9.0-docker"
+ENV ZEPPELIN_VERSION="0.8.2-docker"
 
 ENV SPARK_VERSION="3.0.1"
 
