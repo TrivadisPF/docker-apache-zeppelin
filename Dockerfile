@@ -8,14 +8,12 @@ ARG ZEPPELIN_SOURCE=/tmp/zeppelin/src
 ARG ZEPPELIN_SRC_URL=https://github.com/apache/zeppelin/archive/v${ZEPPELIN_VERSION}.tar.gz
 
 # Allow npm and bower to run with root privileges
-# 	Example with doesn't compile all interpreters
-#		 mvn -B package -DskipTests -Pbuild-distr -Pspark-3.0 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-angular -pl 's!submarine,!livy,!hbase,!pig,!file,!flink,!ignite,!kylin,!lens' && \
 RUN mkdir -p ${ZEPPELIN_SOURCE} \
     && curl -sL ${ZEPPELIN_SRC_URL} | tar -xz -C ${ZEPPELIN_SOURCE} --strip-component=1 \
     && cd ${ZEPPELIN_SOURCE} \
     && echo "unsafe-perm=true" > ~/.npmrc \
     && echo '{ "allow_root": true }' > ~/.bowerrc \
-    && mvn -B package -DskipTests -Pbuild-distr -Pspark-3.0 -Pinclude-hadoop -Phadoop3 -Dhadoop.version=3.2.1 -Pspark-scala-2.12 -Pweb-angular \
+    && mvn -B package -DskipTests -Pbuild-distr -Pspark-2.4 -Dspark.version=2.4.7 -Pspark-scala-2.11 -Pweb-angular \
     && mv /${ZEPPELIN_SOURCE}/zeppelin-distribution/target/zeppelin-*/zeppelin-* /opt/zeppelin/ \
     # Removing stuff saves time, because docker creates a temporary layer
     && rm -rf ~/.m2 \
@@ -27,9 +25,9 @@ MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
 ENV ZEPPELIN_VERSION="0.9.0-docker"
 
-ENV SPARK_VERSION="3.0.1"
+ENV SPARK_VERSION="2.4.7"
 
-ENV HADOOP_VERSION="3.2.1"
+ENV HADOOP_VERSION="2.10.1"
 ENV HADOOP_PREFIX=/hadoop-$HADOOP_VERSION
 ENV HADOOP_HOME=$HADOOP_PREFIX
 ENV HADOOP_CONF_DIR=/etc/hadoop
