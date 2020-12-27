@@ -19,10 +19,9 @@
 # List of users with their password allowed to access Zeppelin.
 # To use a different strategy (LDAP / Database / ...) check the shiro doc at http://shiro.apache.org/configuration.html#Configuration-INISections
 # To enable admin user, uncomment the following line and set an appropriate password.
-admin = $ZEPPELIN_ADMIN_PASSWORD, admin
-user1 = $ZEPPELIN_ADMIN_PASSWORD, role1, role2
-user2 = password3, role3
-user3 = password4, role2
+# GUS - 27.12.20 - if a new user with an env variable is added, then also add it in the entrypoint.sh when doing the envsubst
+$ZEPPELIN_ADMIN_USERNAME  = $ZEPPELIN_ADMIN_PASSWORD, admin
+$ZEPPELIN_USER_USERNAME = $ZEPPELIN_USER_PASSWORD, user_role
 
 # Sample LDAP configuration, for user Authentication, currently tested for single Realm
 [main]

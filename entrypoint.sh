@@ -107,7 +107,7 @@ configure_hive /spark/conf/hive-site.xml hive HIVE_SITE_CONF
 configure_spark /spark/conf/spark-defaults.conf spark SPARK_DEFAULTS_CONF
 
 replace_env_config zeppelin-env.sh
-replace_env_config shiro.ini '$ZEPPELIN_ADMIN_PASSWORD'
+replace_env_config shiro.ini '$ZEPPELIN_ADMIN_USERNAME,$ZEPPELIN_ADMIN_PASSWORD,$ZEPPELIN_USER_USERNAME,$ZEPPELIN_USER_PASSWORD'
 
 if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     echo "Configuring for multihomed network"
