@@ -1,4 +1,4 @@
-FROM maven:3.5-jdk-8 as builder
+FROM maven:3.5-jdk-7 as builder
 
 ENV ZEPPELIN_VERSION=0.8.2-docker
 
@@ -165,5 +165,3 @@ RUN chmod a+x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["bin/zeppelin.sh"]
-
-
