@@ -74,7 +74,7 @@ COPY --from=builder /opt/zeppelin ${ZEPPELIN_HOME}
 RUN curl -s http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-without-hadoop.tgz | tar -xz -C . \
 		&& mv spark-* ${SPARK_HOME}
 
-RUN  wget https://www.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
+RUN  wget https://archive.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
       && tar -xvf hadoop-${HADOOP_VERSION}.tar.gz -C . \
       && rm hadoop-${HADOOP_VERSION}.tar.gz
 RUN ln -s /$HADOOP_HOME/etc/hadoop /etc/hadoop
