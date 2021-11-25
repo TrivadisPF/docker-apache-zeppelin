@@ -1,6 +1,6 @@
 FROM maven:3.5-jdk-8 as builder
 
-ENV ZEPPELIN_VERSION=0.9.0-docker
+ENV ZEPPELIN_VERSION=0.10.0
 
 ARG ZEPPELIN_BUILD_NAME='without-hadoop'
 
@@ -10,16 +10,18 @@ ARG ZEPPELIN_SRC_URL=https://github.com/apache/zeppelin/archive/v${ZEPPELIN_VERS
 # Allow npm and bower to run with root privileges
 # 	Example with doesn't compile all interpreters
 #		 mvn -B package -DskipTests -Pbuild-distr -Pspark-3.0 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-angular -pl 's!submarine,!livy,!hbase,!pig,!file,!flink,!ignite,!kylin,!lens' && \
-RUN mkdir -p ${ZEPPELIN_SOURCE} \
-    && curl -sL ${ZEPPELIN_SRC_URL} | tar -xz -C ${ZEPPELIN_SOURCE} --strip-component=1 \
-    && cd ${ZEPPELIN_SOURCE} \
+RUN apt-get update \ 
+    && mkdir -p ${ZEPPELIN_SOURCE} \
+    && wget ${ZEPPELIN_SRC_URL} \
+    && tar -xzvf v${ZEPPELIN_VERSION}.tar.gz \
     && echo "unsafe-perm=true" > ~/.npmrc \
     && echo '{ "allow_root": true }' > ~/.bowerrc \
+    && cd /zeppelin-${ZEPPELIN_VERSION} \
     && mvn -B package -DskipTests -Pbuild-distr -Pspark-3.0 -Pinclude-hadoop -Phadoop3 -Dhadoop.version=3.2.1 -Pspark-scala-2.12 -Pweb-angular \
     && mv /${ZEPPELIN_SOURCE}/zeppelin-distribution/target/zeppelin-*/zeppelin-* /opt/zeppelin/ \
     # Removing stuff saves time, because docker creates a temporary layer
     && rm -rf ~/.m2 \
-    && rm -rf ${ZEPPELIN_SOURCE}
+    && rm -rf /zeppelin-${ZEPPELIN_VERSION}
 
 
 FROM ubuntu:16.04
