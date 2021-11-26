@@ -17,8 +17,8 @@ RUN apt-get update \
     && echo "unsafe-perm=true" > ~/.npmrc \
     && echo '{ "allow_root": true }' > ~/.bowerrc \
     && cd /zeppelin-${ZEPPELIN_VERSION} \
-    && mvn -B package -DskipTests -Pbuild-distr -Pspark-3.0 -Pinclude-hadoop -Phadoop3 -Dhadoop.version=3.2.1 -Pspark-scala-2.12 -Pweb-angular \
-    && mv /${ZEPPELIN_SOURCE}/zeppelin-distribution/target/zeppelin-*/zeppelin-* /opt/zeppelin/ \
+    && mvn -B package -DskipTests -Pbuild-distr -Pspark-3.0 -Pinclude-hadoop -Phadoop3 -Dhadoop.version=3.2.1 -Pspark-scala-2.12 -Pweb-angular
+RUN mv /zeppelin-${ZEPPELIN_VERSION}/zeppelin-distribution/target/zeppelin-*/zeppelin-* /opt/zeppelin/ \
     # Removing stuff saves time, because docker creates a temporary layer
     && rm -rf ~/.m2 \
     && rm -rf /zeppelin-${ZEPPELIN_VERSION}
@@ -31,7 +31,7 @@ ENV ZEPPELIN_VERSION="0.9.0-docker"
 
 ENV SPARK_VERSION="3.0.1"
 
-ENV HADOOP_VERSION="3.2.1"
+ENV HADOOP_VERSION="3.2.2"
 ENV HADOOP_PREFIX=/hadoop-$HADOOP_VERSION
 ENV HADOOP_HOME=$HADOOP_PREFIX
 ENV HADOOP_CONF_DIR=/etc/hadoop
@@ -78,7 +78,7 @@ COPY --from=builder /opt/zeppelin ${ZEPPELIN_HOME}
 RUN curl -s http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-without-hadoop.tgz | tar -xz -C . \
 		&& mv spark-* ${SPARK_HOME}
 
-RUN  wget https://www.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
+RUN  wget https://dlcdn.apache.org/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
       && tar -xvf hadoop-${HADOOP_VERSION}.tar.gz -C . \
       && rm hadoop-${HADOOP_VERSION}.tar.gz
 RUN ln -s /$HADOOP_HOME/etc/hadoop /etc/hadoop
@@ -111,30 +111,8 @@ RUN echo "$LOG_TAG Install python related packages" && \
     conda config --set always_yes yes --set changeps1 no && \
     conda update -q conda && \
     conda info -a && \
-    conda config --add channels conda-forge && \
-    pip install -q pycodestyle==2.5.0 && \
-    pip install -q numpy==1.17.3 pandas==0.25.0 scipy==1.3.1 grpcio==1.19.0 bkzep==0.6.1 hvplot==0.5.2 protobuf==3.10.0 pandasql==0.7.3 ipython==7.8.0 matplotlib==3.0.3 ipykernel==5.1.2 jupyter_client==5.3.4 bokeh==1.3.4 panel==0.6.0 holoviews==1.12.3 seaborn==0.9.0 plotnine==0.5.1 intake==0.5.3 intake-parquet==0.2.2 altair==3.2.0 pycodestyle==2.5.0 apache_beam==2.15.0
-
-# RUN echo "$LOG_TAG Install R related packages" && \
-#     echo "PATH: $PATH" && \
-#     ls /opt/conda/bin && \
-#     echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" | tee -a /etc/apt/sources.list && \
-#     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 51716619E084DAB9 && \
-#     apt-get -y update && \
-#     apt-get -y --allow-unauthenticated install r-base r-base-dev && \
-#     R -e "install.packages('evaluate', repos = 'https://cloud.r-project.org')" && \
-#     R -e "install.packages('knitr', repos='http://cran.us.r-project.org')" && \
-#     R -e "install.packages('ggplot2', repos='http://cran.us.r-project.org')" && \
-#     R -e "install.packages('googleVis', repos='http://cran.us.r-project.org')" && \
-#     R -e "install.packages('data.table', repos='http://cran.us.r-project.org')" && \
-#     R -e "install.packages('IRkernel', repos = 'https://cloud.r-project.org');IRkernel::installspec()" && \
-#     R -e "install.packages('shiny', repos = 'https://cloud.r-project.org')" && \
-#     # for devtools, Rcpp
-#     apt-get -y install libcurl4-gnutls-dev libssl-dev && \
-#     R -e "install.packages('devtools', repos='http://cran.us.r-project.org')" && \
-#     R -e "install.packages('Rcpp', repos='http://cran.us.r-project.org')" && \
-#     Rscript -e "library('devtools'); library('Rcpp'); install_github('ramnathv/rCharts')"
-
+    conda config --add channels conda-forge
+    
 RUN echo "$LOG_TAG Cleanup" && \
     apt-get autoclean && \
     apt-get clean
