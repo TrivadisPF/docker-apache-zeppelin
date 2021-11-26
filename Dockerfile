@@ -27,9 +27,9 @@ RUN mv /zeppelin-${ZEPPELIN_VERSION}/zeppelin-distribution/target/zeppelin-*/zep
 FROM ubuntu:16.04
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
-ENV ZEPPELIN_VERSION="0.9.0-docker"
+ENV ZEPPELIN_VERSION="0.10.0-docker"
 
-ENV SPARK_VERSION="3.0.1"
+ENV SPARK_VERSION="3.1.2"
 
 ENV HADOOP_VERSION="3.2.2"
 ENV HADOOP_PREFIX=/hadoop-$HADOOP_VERSION
