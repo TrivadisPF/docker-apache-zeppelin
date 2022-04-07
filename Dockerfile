@@ -1,6 +1,6 @@
 FROM maven:3.5-jdk-8 as builder
 
-ENV ZEPPELIN_VERSION=0.10.0
+ENV ZEPPELIN_VERSION=0.10.1
 
 ARG ZEPPELIN_BUILD_NAME='without-hadoop'
 
