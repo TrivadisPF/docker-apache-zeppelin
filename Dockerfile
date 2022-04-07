@@ -9,7 +9,7 @@ ARG ZEPPELIN_SRC_URL=https://github.com/apache/zeppelin/archive/v${ZEPPELIN_VERS
 
 # Allow npm and bower to run with root privileges
 # 	Example with doesn't compile all interpreters
-#		 mvn -B package -DskipTests -Pbuild-distr -Pspark-3.0 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-angular -pl 's!submarine,!livy,!hbase,!pig,!file,!flink,!ignite,!kylin,!lens' && \
+#		 mvn -B package -DskipTests -Pbuild-distr -Pspark-3.1 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-angular -pl 's!submarine,!livy,!hbase,!pig,!file,!flink,!ignite,!kylin,!lens' && \
 RUN apt-get update \ 
     && mkdir -p ${ZEPPELIN_SOURCE} \
     && wget ${ZEPPELIN_SRC_URL} \
