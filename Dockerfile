@@ -29,7 +29,7 @@ MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
 ENV ZEPPELIN_VERSION="0.10.0-docker"
 
-ENV SPARK_VERSION="3.1.1"
+ENV SPARK_VERSION="3.1.3"
 
 ENV HADOOP_VERSION="3.2.3"
 ENV HADOOP_PREFIX=/hadoop-$HADOOP_VERSION
