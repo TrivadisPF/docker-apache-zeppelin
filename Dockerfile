@@ -9,7 +9,7 @@ ARG ZEPPELIN_SRC_URL=https://github.com/apache/zeppelin/archive/v${ZEPPELIN_VERS
 
 # Allow npm and bower to run with root privileges
 # 	Example with doesn't compile all interpreters
-#		 mvn -B package -DskipTests -Pbuild-distr -Pspark-3.1 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-angular -pl 's!submarine,!livy,!hbase,!pig,!file,!flink,!ignite,!kylin,!lens' && \
+#		 mvn -B package -DskipTests -Pbuild-distr -Pspark-3.2 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-angular -pl 's!submarine,!livy,!hbase,!pig,!file,!flink,!ignite,!kylin,!lens' && \
 RUN apt-get update \ 
     && mkdir -p ${ZEPPELIN_SOURCE} \
     && wget ${ZEPPELIN_SRC_URL} \
@@ -17,7 +17,7 @@ RUN apt-get update \
     && echo "unsafe-perm=true" > ~/.npmrc \
     && echo '{ "allow_root": true }' > ~/.bowerrc \
     && cd /zeppelin-${ZEPPELIN_VERSION} \
-    && mvn -B package -DskipTests -Pbuild-distr -Pspark-3.1 -Pinclude-hadoop -Phadoop3 -Dspark.version=3.1.3 -Dhadoop.version=3.2.3 -Pspark-scala-2.12 -Pweb-angular
+    && mvn -B package -DskipTests -Pbuild-distr -Pspark-3.2 -Pinclude-hadoop -Phadoop3 -Dhadoop.version=3.2.1 -Pspark-scala-2.12 -Pweb-angular
 RUN mv /zeppelin-${ZEPPELIN_VERSION}/zeppelin-distribution/target/zeppelin-*/zeppelin-* /opt/zeppelin/ \
     # Removing stuff saves time, because docker creates a temporary layer
     && rm -rf ~/.m2 \
@@ -29,7 +29,7 @@ MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
 ENV ZEPPELIN_VERSION="0.10.1-docker"
 
-ENV SPARK_VERSION="3.1.3"
+ENV SPARK_VERSION="3.2.1"
 
 ENV HADOOP_VERSION="3.2.3"
 ENV HADOOP_PREFIX=/hadoop-$HADOOP_VERSION
