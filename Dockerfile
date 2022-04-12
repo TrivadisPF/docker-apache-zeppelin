@@ -3,7 +3,7 @@ MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
 USER root
 
-ENV ZEPPELIN_VERSION="0.10.1"
+ENV ZEPPELIN_VERSION="0.10.0"
 
 ENV SPARK_VERSION="2.4.8"
 ENV SPARK_HOME="/spark"
