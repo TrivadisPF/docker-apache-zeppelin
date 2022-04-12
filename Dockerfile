@@ -21,7 +21,7 @@ ENV SPARK_DIST_CLASSPATH=$HADOOP_HOME/etc/hadoop/*:$HADOOP_HOME/share/hadoop/com
 RUN curl -s http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-without-hadoop.tgz | tar -xz -C . \
 		&& mv spark-* ${SPARK_HOME}
 
-RUN  wget https://dlcdn.apache.org/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
+RUN  wget https://archive.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
       && tar -xvf hadoop-${HADOOP_VERSION}.tar.gz -C . \
       && rm hadoop-${HADOOP_VERSION}.tar.gz \
 	  && mv hadoop-* / 
