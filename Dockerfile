@@ -5,10 +5,10 @@ USER root
 
 ENV ZEPPELIN_VERSION="0.10.1"
 
-ENV SPARK_VERSION="3.1.3"
+ENV SPARK_VERSION="2.4.8"
 ENV SPARK_HOME="/spark"
 
-ENV HADOOP_VERSION="3.2.3"
+ENV HADOOP_VERSION="2.8.5"
 ENV HADOOP_HOME=/hadoop-$HADOOP_VERSION
 ENV HADOOP_CONF_DIR=/etc/hadoop
 ENV LD_LIBRARY_PATH=$HADOOP_HOME/lib/native
@@ -21,7 +21,7 @@ ENV SPARK_DIST_CLASSPATH=$HADOOP_HOME/etc/hadoop/*:$HADOOP_HOME/share/hadoop/com
 RUN curl -s http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-without-hadoop.tgz | tar -xz -C . \
 		&& mv spark-* ${SPARK_HOME}
 
-RUN  wget https://dlcdn.apache.org/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
+RUN  wget https://archive.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
       && tar -xvf hadoop-${HADOOP_VERSION}.tar.gz -C . \
       && rm hadoop-${HADOOP_VERSION}.tar.gz \
 	  && mv hadoop-* / 
