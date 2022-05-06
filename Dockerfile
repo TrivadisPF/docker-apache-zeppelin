@@ -1,4 +1,4 @@
-FROM apache/zeppelin:0.10.1
+FROM apache/zeppelin:0.10.0
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
 USER root
