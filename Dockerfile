@@ -1,4 +1,4 @@
-FROM openjdk:8 as builder
+FROM openjdk:11 as builder
 
 WORKDIR /workspace/
 
