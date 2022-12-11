@@ -67,7 +67,7 @@ ENV PATH /opt/conda/envs/python_3_with_R/bin:/opt/conda/bin:$PATH
 
 USER root
 
-ENV SPARK_VERSION="3.2.3"
+ENV SPARK_VERSION="3.3.1"
 ENV SPARK_HOME="/spark"
 
 ENV HADOOP_VERSION="3.2.3"
