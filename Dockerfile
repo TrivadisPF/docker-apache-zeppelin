@@ -84,8 +84,8 @@ RUN curl -s https://downloads.apache.org/spark/spark-${SPARK_VERSION}/spark-${SP
 
 RUN  wget https://archive.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
       && tar -xvf hadoop-${HADOOP_VERSION}.tar.gz -C . \
-      && rm hadoop-${HADOOP_VERSION}.tar.gz \
-#	  && mv hadoop-* / 
+      && rm hadoop-${HADOOP_VERSION}.tar.gz 
+
 RUN ln -s $HADOOP_HOME/etc/hadoop /etc/hadoop
 RUN mkdir -p $HADOOP_HOME/logs
 
