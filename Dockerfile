@@ -1,5 +1,8 @@
 FROM openjdk:8 as builder
-ADD . /workspace/zeppelin
+ADD . /workspace/
+
+RUN git clone https://github.com/apache/zeppelin.git
+
 WORKDIR /workspace/zeppelin
 ENV MAVEN_OPTS="-Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
 # Allow npm and bower to run with root privileges
@@ -90,7 +93,6 @@ ENV MULTIHOMED_NETWORK=1
 ENV PATH $HADOOP_HOME/bin/:$SPARK_HOME/bin:$PATH
 ENV SPARK_DIST_CLASSPATH=$HADOOP_HOME/etc/hadoop/*:$HADOOP_HOME/share/hadoop/common/lib/*:$HADOOP_HOME/share/hadoop/common/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/hdfs/lib/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/yarn/lib/*:$HADOOP_HOME/share/hadoop/yarn/*:$HADOOP_HOME/share/hadoop/mapreduce/lib/*:$HADOOP_HOME/share/hadoop/mapreduce/*:$HADOOP_HOME/share/hadoop/tools/lib/*
 
-
 # install spark
 RUN curl -s https://downloads.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-without-hadoop.tgz | tar -xz -C . \
 		&& mv spark-* ${SPARK_HOME}
@@ -112,7 +114,6 @@ COPY conf.templates ${ZEPPELIN_HOME}/conf.templates
 COPY hive-site.xml ${SPARK_HOME}/conf/
 COPY spark-env.sh ${SPARK_HOME}/conf/
 COPY spark-defaults.conf ${SPARK_HOME}/conf/
-
 
 WORKDIR ${ZEPPELIN_HOME}
 
