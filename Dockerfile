@@ -1,6 +1,6 @@
 FROM openjdk:8 as builder
-ADD . /workspace/
 
+WORKDIR /workspace
 RUN git clone https://github.com/apache/zeppelin.git
 
 WORKDIR /workspace/zeppelin
