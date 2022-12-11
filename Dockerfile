@@ -1,7 +1,7 @@
 FROM openjdk:8 as builder
 
 WORKDIR /workspace
-RUN git clone https://github.com/gschmutz/zeppelin.git
+RUN git clone https://github.com/apache/zeppelin.git
 
 WORKDIR /workspace/zeppelin
 ENV MAVEN_OPTS="-Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
