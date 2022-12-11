@@ -18,13 +18,13 @@ ENV SPARK_DIST_CLASSPATH=$HADOOP_HOME/etc/hadoop/*:$HADOOP_HOME/share/hadoop/com
 
 
 # install spark
-RUN curl -s https://downloads.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-without-hadoop.tgz | tar -xz -C . \
+RUN curl -s https://downloads.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.2.tgz | tar -xz -C . \
 		&& mv spark-* ${SPARK_HOME}
 
-RUN  wget https://archive.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
-      && tar -xvf hadoop-${HADOOP_VERSION}.tar.gz -C . \
-      && rm hadoop-${HADOOP_VERSION}.tar.gz \
-	  && mv hadoop-* / 
+#RUN  wget https://archive.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
+#      && tar -xvf hadoop-${HADOOP_VERSION}.tar.gz -C . \
+#      && rm hadoop-${HADOOP_VERSION}.tar.gz \
+#	  && mv hadoop-* / 
 RUN ln -s $HADOOP_HOME/etc/hadoop /etc/hadoop
 RUN mkdir -p $HADOOP_HOME/logs
 
