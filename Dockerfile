@@ -7,7 +7,9 @@ ENV ZEPPELIN_VERSION="0.10.0"
 
 ENV SPARK_VERSION="3.1.3"
 ENV HADOOP_VERSION=3.2.3
-ENV SPARK_HOME="/spark-3.2.3"
+ENV SPARK_HOME="/opt/spark-3.2.3"
+
+WORKDIR ${SPARK_HOME}
 
 ARG SPARK_BUILD_NAME='without-hadoop'
 ARG SPARK_BUILD_PROFILES='-Phive -Phive-thriftserver -Pyarn -Phadoop-provided -Dhadoop.version=3.2.3'
@@ -15,9 +17,9 @@ ARG SPARK_BUILD_PROFILES='-Phive -Phive-thriftserver -Pyarn -Phadoop-provided -D
 ARG SPARK_SRC_URL=https://github.com/apache/spark/archive/refs/tags/v${SPARK_VERSION}.tar.gz
 
 RUN wget ${SPARK_SRC_URL} \
-    && tar -xf v${SPARK_VERSION}.tar.gz \
+    && tar -xf v${SPARK_VERSION}.tar.gz -C ${SPARK_HOME}
     && rm v${SPARK_VERSION}.tar.gz \
-    && cd spark-${SPARK_VERSION} \
+    && cd ${SPARK_HOME} \
     && ./dev/make-distribution.sh --name ${SPARK_BUILD_NAME} --tgz ${SPARK_BUILD_PROFILES}
 
 RUN mkdir -p /var/log/spark && chmod -R 777 "/var/log/spark"
