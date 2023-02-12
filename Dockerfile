@@ -60,7 +60,7 @@ RUN apt-get -y update \
       && apt-get autoclean \
       && apt-get clean \
       && ln -s /lib64/ld-linux-x86-64.so.2 /lib/ld-linux-x86-64.so.2 \
-      && chmod +x *.sh \
+#      && chmod +x *.sh \
       && tar -xvzf spark-${SPARK_VERSION}-bin-without-hadoop.tgz \
       && mv spark-${SPARK_VERSION}-bin-without-hadoop spark \
       && rm spark-${SPARK_VERSION}-bin-without-hadoop.tgz \
