@@ -63,18 +63,18 @@ RUN apt-get -y update \
       && ln -s /lib64/ld-linux-x86-64.so.2 /lib/ld-linux-x86-64.so.2 \
 #      && chmod +x *.sh \
       && tar -xvzf spark-${SPARK_VERSION}-bin-without-hadoop.tgz \
-      && mv spark-${SPARK_VERSION}-bin-without-hadoop /opt/spark \
+      && mv spark-${SPARK_VERSION}-bin-without-hadoop /spark \
       && rm spark-${SPARK_VERSION}-bin-without-hadoop.tgz \
       && wget https://archive.apache.org/dist/hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz \
 	  && tar -xzvf apache-hive-$HIVE_VERSION-bin.tar.gz \
-	  && mv apache-hive-$HIVE_VERSION-bin /opt/hive \
+	  && mv apache-hive-$HIVE_VERSION-bin /hive \
 	  && rm apache-hive-$HIVE_VERSION-bin.tar.gz \
       && cd /
       
       
 RUN mkdir -p /var/log/spark && chmod -R 777 "/var/log/spark"
 
-ENV SPARK_HOME=/opt/spark
+ENV SPARK_HOME=/spark
 ENV PATH /spark/bin:$PATH
 
 COPY log4j.properties ${ZEPPELIN_HOME}/conf/
