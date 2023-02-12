@@ -54,7 +54,8 @@ ENV USER=root
 ENV PATH $HADOOP_PREFIX/bin/:$PATH
 ENV SPARK_DIST_CLASSPATH=$HADOOP_HOME/etc/hadoop/*:$HADOOP_HOME/share/hadoop/common/lib/*:$HADOOP_HOME/share/hadoop/common/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/hdfs/lib/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/yarn/lib/*:$HADOOP_HOME/share/hadoop/yarn/*:$HADOOP_HOME/share/hadoop/mapreduce/lib/*:$HADOOP_HOME/share/hadoop/mapreduce/*:$HADOOP_HOME/share/hadoop/tools/lib/*
 
-RUN apt-get -y update && apt-get install -y curl bash gnupg wget openjdk8-jre nss libc6-compat procps coreutils \
+RUN apt-get -y update \ 
+      && apt-get install -y curl bash gnupg wget openjdk8-jre nss libc6-compat procps coreutils \
       && rm -rf /var/lib/apt/lists/*  \
       && apt-get autoclean \
       && apt-get clean
