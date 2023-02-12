@@ -58,7 +58,7 @@ RUN apt-get -y update \
       && apt-get install -y curl bash gnupg wget openjdk8-jre nss libc6-compat procps coreutils \
       && rm -rf /var/lib/apt/lists/*  \
       && apt-get autoclean \
-      && apt-get clean
+      && apt-get clean \
       && ln -s /lib64/ld-linux-x86-64.so.2 /lib/ld-linux-x86-64.so.2 \
       && chmod +x *.sh \
       && tar -xvzf spark-${SPARK_VERSION}-bin-without-hadoop.tgz \
