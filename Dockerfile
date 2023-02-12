@@ -32,7 +32,7 @@ ENV INIT_DAEMON_STEP spark_master_init
 COPY --from=sparkbuild ${SPARK_SOURCE}/spark-${SPARK_VERSION}-bin-without-hadoop.tgz .
 
 # Setup Perl so that entrypoint.sh works
-RUN apk add --update perl && rm -rf /var/cache/apk/*
+#RUN apk add --update perl && rm -rf /var/cache/apk/*
 
 RUN  wget https://www.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
       && tar -xvf hadoop-${HADOOP_VERSION}.tar.gz -C /opt/ \
