@@ -1,97 +1,81 @@
-FROM openjdk:8 as builder
+FROM openjdk:8 AS sparkbuild
 
-WORKDIR /workspace
-RUN git clone https://github.com/apache/zeppelin.git
+ENV SPARK_VERSION=3.3.1
+ENV HADOOP_VERSION=3.3.4
 
-WORKDIR /workspace/zeppelin
-ENV MAVEN_OPTS="-Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-# Allow npm and bower to run with root privileges
-RUN echo "unsafe-perm=true" > ~/.npmrc && \
-    echo '{ "allow_root": true }' > ~/.bowerrc && \
-    ./mvnw -B package -DskipTests -Pbuild-distr -Pspark-3.2 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-angular -Pweb-dist && \
-    # Example with doesn't compile all interpreters
-    # ./mvnw -B package -DskipTests -Pbuild-distr -Pspark-3.2 -Pinclude-hadoop -Phadoop3 -Pspark-scala-2.12 -Pweb-angular -Pweb-dist -pl '!groovy,!submarine,!livy,!hbase,!file,!flink' && \
-    mv /workspace/zeppelin/zeppelin-distribution/target/zeppelin-*/zeppelin-* /opt/zeppelin/ && \
-    # Removing stuff saves time, because docker creates a temporary layer
-    rm -rf ~/.m2 && \
-    rm -rf /workspace/zeppelin/*
+ARG SPARK_BUILD_NAME='without-hadoop'
+ARG SPARK_BUILD_PROFILES='-Phive -Phive-thriftserver -Pyarn -Phadoop-provided -Dhadoop.version=3.3.4'
 
-FROM ubuntu:20.04
-COPY --from=builder /opt/zeppelin /opt/zeppelin
+ARG SPARK_SRC_URL=https://github.com/apache/spark/archive/refs/tags/v${SPARK_VERSION}.tar.gz
 
-ENV Z_VERSION="0.11.0-SNAPSHOT"
+RUN wget ${SPARK_SRC_URL} \
+    && tar -xf v${SPARK_VERSION}.tar.gz \
+    && rm v${SPARK_VERSION}.tar.gz \
+    && cd spark-${SPARK_VERSION} \
+    && ./dev/make-distribution.sh --name ${SPARK_BUILD_NAME} --tgz ${SPARK_BUILD_PROFILES}
 
-ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
-    ZEPPELIN_HOME="/opt/zeppelin" \
-    HOME="/opt/zeppelin" \
-    LANG=en_US.UTF-8 \
-    LC_ALL=en_US.UTF-8 \
-    JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \
-    ZEPPELIN_ADDR="0.0.0.0"
 
-RUN echo "$LOG_TAG install basic packages" && \
-    apt-get -y update && \
-    # Switch back to install JRE instead of JDK when moving to JDK9 or later.
-    DEBIAN_FRONTEND=noninteractive apt-get install -y locales language-pack-en tini openjdk-8-jdk-headless wget unzip && \
-    # Cleanup
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get autoclean && \
-    apt-get clean
-
-# Install conda to manage python and R packages
-ARG miniconda_version="py37_4.9.2"
-# Hashes via https://docs.conda.io/en/latest/miniconda_hashes.html
-ARG miniconda_sha256="79510c6e7bd9e012856e25dcb21b3e093aa4ac8113d9aa7e82a86987eabe1c31"
-# Install python and R packages via conda
-COPY env_python_3_with_R.yml /env_python_3_with_R.yml
-
-RUN set -ex && \
-    wget -nv https://repo.anaconda.com/miniconda/Miniconda3-${miniconda_version}-Linux-x86_64.sh -O miniconda.sh && \
-    echo "${miniconda_sha256} miniconda.sh" > anaconda.sha256 && \
-    sha256sum --strict -c anaconda.sha256 && \
-    bash miniconda.sh -b -p /opt/conda && \
-    export PATH=/opt/conda/bin:$PATH && \
-    conda config --set always_yes yes --set changeps1 no && \
-    conda info -a && \
-    conda install mamba -c conda-forge && \
-    mamba env update -f /env_python_3_with_R.yml --prune && \
-    # Cleanup
-    rm -v miniconda.sh anaconda.sha256  && \
-    # Cleanup based on https://github.com/ContinuumIO/docker-images/commit/cac3352bf21a26fa0b97925b578fb24a0fe8c383
-    find /opt/conda/ -follow -type f -name '*.a' -delete && \
-    find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
-    mamba clean -ay
-    # Allow to modify conda packages. This allows malicious code to be injected into other interpreter sessions, therefore it is disabled by default
-    # chmod -R ug+rwX /opt/conda
-ENV PATH /opt/conda/envs/python_3_with_R/bin:/opt/conda/bin:$PATH
+FROM apache/zeppelin:0.10.1
 
 USER root
 
-ENV SPARK_VERSION="3.3.1"
-ENV SPARK_HOME="/spark"
+ENV ZEPPELIN_VERSION="0.10.1"
 
-ENV HADOOP_VERSION="3.3.4"
-ENV HADOOP_HOME=/hadoop-$HADOOP_VERSION
+ENV SPARK_VERSION="3.3.1"
+ENV HADOOP_VERSION=3.3.4
+ENV HIVE_VERSION=2.3.7
+
+ENV SPARK_SOURCE=spark-${SPARK_VERSION}
+ENV ENABLE_INIT_DAEMON true
+ENV INIT_DAEMON_BASE_URI http://identifier/init-daemon
+ENV INIT_DAEMON_STEP spark_master_init
+
+COPY --from=sparkbuild ${SPARK_SOURCE}/spark-${SPARK_VERSION}-bin-without-hadoop.tgz .
+
+# Setup Perl so that entrypoint.sh works
+#RUN apk add --update perl && rm -rf /var/cache/apk/*
+
+RUN  wget https://www.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
+      && tar -xvf hadoop-${HADOOP_VERSION}.tar.gz -C /opt/ \
+      && rm hadoop-${HADOOP_VERSION}.tar.gz \
+      && cd /
+
+RUN ln -s /opt/hadoop-$HADOOP_VERSION/etc/hadoop /etc/hadoop
+
+RUN mkdir /opt/hadoop-$HADOOP_VERSION/logs
+
+RUN mkdir /hadoop-data
+
+ENV HADOOP_PREFIX=/opt/hadoop-$HADOOP_VERSION
+ENV HADOOP_HOME=$HADOOP_PREFIX
 ENV HADOOP_CONF_DIR=/etc/hadoop
-ENV LD_LIBRARY_PATH=$HADOOP_HOME/lib/native
+ENV LD_LIBRARY_PATH=$HADOOP_PREFIX/lib/native
 ENV MULTIHOMED_NETWORK=1
-ENV PATH $HADOOP_HOME/bin/:$SPARK_HOME/bin:$PATH
+ENV USER=root
+ENV PATH $HADOOP_PREFIX/bin/:$PATH
 ENV SPARK_DIST_CLASSPATH=$HADOOP_HOME/etc/hadoop/*:$HADOOP_HOME/share/hadoop/common/lib/*:$HADOOP_HOME/share/hadoop/common/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/hdfs/lib/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/yarn/lib/*:$HADOOP_HOME/share/hadoop/yarn/*:$HADOOP_HOME/share/hadoop/mapreduce/lib/*:$HADOOP_HOME/share/hadoop/mapreduce/*:$HADOOP_HOME/share/hadoop/tools/lib/*
 
-WORKDIR /workspace
-
-# install spark
-RUN curl -s https://downloads.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-without-hadoop.tgz | tar -xz -C . \
-		&& mv spark-* ${SPARK_HOME}
-
-RUN  wget https://archive.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
-      && tar -xvf hadoop-${HADOOP_VERSION}.tar.gz -C . \
-      && rm hadoop-${HADOOP_VERSION}.tar.gz \
-	  && mv hadoop-* / 
-RUN ln -s $HADOOP_HOME/etc/hadoop /etc/hadoop
-RUN mkdir -p $HADOOP_HOME/logs
-
+RUN apt-get -y update \ 
+      && apt-get install -y curl bash gnupg wget procps coreutils \
+      && rm -rf /var/lib/apt/lists/*  \
+      && apt-get autoclean \
+      && apt-get clean \
+      && ln -s /lib64/ld-linux-x86-64.so.2 /lib/ld-linux-x86-64.so.2 \
+#      && chmod +x *.sh \
+      && tar -xvzf spark-${SPARK_VERSION}-bin-without-hadoop.tgz \
+      && mv spark-${SPARK_VERSION}-bin-without-hadoop /spark \
+      && rm spark-${SPARK_VERSION}-bin-without-hadoop.tgz \
+      && wget https://archive.apache.org/dist/hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz \
+	  && tar -xzvf apache-hive-$HIVE_VERSION-bin.tar.gz \
+	  && mv apache-hive-$HIVE_VERSION-bin /hive \
+	  && rm apache-hive-$HIVE_VERSION-bin.tar.gz \
+      && cd /
+      
+      
 RUN mkdir -p /var/log/spark && chmod -R 777 "/var/log/spark"
+
+ENV SPARK_HOME=/spark
+ENV PATH /spark/bin:$PATH
 
 COPY log4j.properties ${ZEPPELIN_HOME}/conf/
 COPY log4j_docker.properties ${ZEPPELIN_HOME}/conf/
@@ -101,6 +85,7 @@ COPY conf.templates ${ZEPPELIN_HOME}/conf.templates
 COPY hive-site.xml ${SPARK_HOME}/conf/
 COPY spark-env.sh ${SPARK_HOME}/conf/
 COPY spark-defaults.conf ${SPARK_HOME}/conf/
+
 
 WORKDIR ${ZEPPELIN_HOME}
 
