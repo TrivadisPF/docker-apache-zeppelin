@@ -62,12 +62,12 @@ RUN apt-get -y update \
       && apt-get clean \
       && ln -s /lib64/ld-linux-x86-64.so.2 /lib/ld-linux-x86-64.so.2 \
 #      && chmod +x *.sh \
-      && tar -xvzf spark-${SPARK_VERSION}-bin-without-hadoop.tgz -C /opt/ \
-      && mv spark-${SPARK_VERSION}-bin-without-hadoop spark \
+      && tar -xvzf spark-${SPARK_VERSION}-bin-without-hadoop.tgz \
+      && mv spark-${SPARK_VERSION}-bin-without-hadoop /opt/spark \
       && rm spark-${SPARK_VERSION}-bin-without-hadoop.tgz \
       && wget https://archive.apache.org/dist/hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz \
-	  && tar -xzvf apache-hive-$HIVE_VERSION-bin.tar.gz -C /opt/ \
-	  && mv apache-hive-$HIVE_VERSION-bin hive \
+	  && tar -xzvf apache-hive-$HIVE_VERSION-bin.tar.gz \
+	  && mv apache-hive-$HIVE_VERSION-bin /opt/hive \
 	  && rm apache-hive-$HIVE_VERSION-bin.tar.gz \
       && cd /
       
