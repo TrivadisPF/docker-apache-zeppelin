@@ -15,11 +15,11 @@ RUN wget ${SPARK_SRC_URL} \
     && ./dev/make-distribution.sh --name ${SPARK_BUILD_NAME} --tgz ${SPARK_BUILD_PROFILES}
 
 
-FROM apache/zeppelin:0.10.0
+FROM apache/zeppelin:0.10.1
 
 USER root
 
-ENV ZEPPELIN_VERSION="0.10.0"
+ENV ZEPPELIN_VERSION="0.10.1"
 
 ENV SPARK_VERSION="3.2.3"
 ENV HADOOP_VERSION=3.3.4
