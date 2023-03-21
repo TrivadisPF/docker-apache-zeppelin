@@ -85,7 +85,7 @@ COPY conf.templates ${ZEPPELIN_HOME}/conf.templates
 COPY hive-site.xml ${SPARK_HOME}/conf/
 COPY spark-env.sh ${SPARK_HOME}/conf/
 COPY spark-defaults.conf ${SPARK_HOME}/conf/
-
+COPY maven-download.sh /
 
 WORKDIR ${ZEPPELIN_HOME}
 
