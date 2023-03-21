@@ -188,4 +188,9 @@ done
 
 envsubst < /root/.s3cfg.template > /root/.s3cfg
 
+if [ ${SPARK_DOWNLOAD_JARS_PACKAGES} ]
+then
+  /maven-download.sh central ${SPARK_DOWNLOAD_JARS_PACKAGES} /spark/jars
+fi  
+
 exec $@
