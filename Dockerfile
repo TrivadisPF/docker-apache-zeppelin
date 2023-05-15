@@ -70,7 +70,10 @@ RUN apt-get -y update \
 	  && mv apache-hive-$HIVE_VERSION-bin /hive \
 	  && rm apache-hive-$HIVE_VERSION-bin.tar.gz \
       && cd /
-      
+
+# GuS - Install python 3.10 and R packages via conda
+COPY env_python_310_with_R.yml /env_python_310_with_R.yml      
+RUN mamba env update -f /env_python_310_with_R.yml --prune      
       
 RUN mkdir -p /var/log/spark && chmod -R 777 "/var/log/spark"
 
