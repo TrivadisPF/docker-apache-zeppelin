@@ -193,8 +193,8 @@ then
   /maven-download.sh central ${SPARK_INSTALL_JARS_PACKAGES} /spark/jars
 fi
 
-source /opt/conda/etc/profile.d/conda.sh
-conda activate python_310_with_R
-conda list env  
+#source /opt/conda/etc/profile.d/conda.sh
+#conda activate python_310_with_R
+#conda list env  
 
 exec $@
