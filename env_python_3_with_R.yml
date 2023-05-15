@@ -1,4 +1,4 @@
-name: python_3_with_R
+name: python_310_with_R
 channels:
   - conda-forge
   - defaults
