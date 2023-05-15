@@ -71,7 +71,8 @@ RUN apt-get -y update \
 	  && rm apache-hive-$HIVE_VERSION-bin.tar.gz \
       && cd /
       
-RUN conda create --name py310 && conda install -n py310 python=3.10 && conda activate py310
+RUN conda create --name py310 && conda install -n py310 python=3.10 && conda init bash
+RUN conda activate py310
       
 RUN mkdir -p /var/log/spark && chmod -R 777 "/var/log/spark"
 
