@@ -188,4 +188,8 @@ done
 
 envsubst < /root/.s3cfg.template > /root/.s3cfg
 
+source /opt/conda/etc/profile.d/conda.sh
+conda activate python_310_with_R
+conda env list  
+
 exec $@
