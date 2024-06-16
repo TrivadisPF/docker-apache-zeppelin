@@ -79,7 +79,7 @@ RUN curl -L https://github.com/a8m/envsubst/releases/download/v1.2.0/envsubst-`u
 
 # GuS - Install python 3.10 and R packages via conda
 COPY env_python_310_with_R.yml /env_python_310_with_R.yml      
-RUN mamba env update -f /env_python_310_with_R.yml --prune         
+#RUN mamba env update -f /env_python_310_with_R.yml --prune         
       
 RUN mkdir -p /var/log/spark && chmod -R 777 "/var/log/spark"
 
