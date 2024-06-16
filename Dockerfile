@@ -37,7 +37,7 @@ COPY --from=sparkbuild ${SPARK_SOURCE}/spark-${SPARK_VERSION}-bin-without-hadoop
 # Setup Perl so that entrypoint.sh works
 #RUN apk add --update perl && rm -rf /var/cache/apk/*
 
-RUN  wget https://www.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
+RUN  wget https://archive.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
       && tar -xvf hadoop-${HADOOP_VERSION}.tar.gz -C /opt/ \
       && rm hadoop-${HADOOP_VERSION}.tar.gz \
       && cd /
