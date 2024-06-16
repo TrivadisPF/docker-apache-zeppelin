@@ -6,7 +6,7 @@ dependencies:
   - python=3.10
   - pycodestyle
   - scipy
-  - numpy=1.19.5
+  - numpy
   - grpcio
   - protobuf
   - pandasql
@@ -23,7 +23,7 @@ dependencies:
   - vega_datasets
   - plotly
   - pip
-  - r-base=3
+  - r-base
   - r-data.table
   - r-evaluate
   - r-base64enc
