@@ -72,6 +72,10 @@ RUN apt-get -y update \
 	  && mv apache-hive-$HIVE_VERSION-bin /hive \
 	  && rm apache-hive-$HIVE_VERSION-bin.tar.gz \
       && cd /
+      
+RUN curl -L https://github.com/a8m/envsubst/releases/download/v1.2.0/envsubst-`uname -s`-`uname -m` -o envsubst \
+      && chmod +x envsubst \
+      && mv envsubst /usr/local/bin      
 
 # GuS - Install python 3.10 and R packages via conda
 COPY env_python_310_with_R.yml /env_python_310_with_R.yml      
