@@ -77,6 +77,9 @@ RUN curl -L https://github.com/a8m/envsubst/releases/download/v1.2.0/envsubst-`u
       && chmod +x envsubst \
       && mv envsubst /usr/local/bin      
 
+WORKDIR ${ZEPPELIN_HOME}
+RUN find . -name '._*' -exec rm -rf {} \;
+
 # GuS - Install python 3.10 and R packages via conda
 COPY env_python_310_with_R.yml /env_python_310_with_R.yml      
 #RUN mamba env update -f /env_python_310_with_R.yml --prune         
@@ -95,10 +98,7 @@ COPY hive-site.xml ${SPARK_HOME}/conf/
 COPY spark-env.sh ${SPARK_HOME}/conf/
 COPY spark-defaults.conf ${SPARK_HOME}/conf/
 
-
 WORKDIR ${ZEPPELIN_HOME}
-
-RUN find . -name '._*' -exec rm -rf {} \;
 
 ADD entrypoint.sh /entrypoint.sh
 RUN chmod a+x /entrypoint.sh
