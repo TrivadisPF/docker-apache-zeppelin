@@ -98,6 +98,8 @@ COPY spark-defaults.conf ${SPARK_HOME}/conf/
 
 WORKDIR ${ZEPPELIN_HOME}
 
+RUN find . -name '._*' -exec rm -rf {} \;
+
 ADD entrypoint.sh /entrypoint.sh
 RUN chmod a+x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
