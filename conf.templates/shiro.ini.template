@@ -49,12 +49,6 @@ $ZEPPELIN_USER_USERNAME = $ZEPPELIN_USER_PASSWORD, user_role
 #pamRealm=org.apache.zeppelin.realm.PamRealm
 #pamRealm.service=sshd
 
-### A sample for configuring ZeppelinHub Realm
-#zeppelinHubRealm = org.apache.zeppelin.realm.ZeppelinHubRealm
-## Url of ZeppelinHub
-#zeppelinHubRealm.zeppelinhubUrl = https://www.zeppelinhub.com
-#securityManager.realms = $zeppelinHubRealm
-
 ## A same for configuring Knox SSO Realm
 #knoxJwtRealm = org.apache.zeppelin.realm.jwt.KnoxJwtRealm
 #knoxJwtRealm.providerUrl = https://domain.example.com/
@@ -65,9 +59,22 @@ $ZEPPELIN_USER_USERNAME = $ZEPPELIN_USER_PASSWORD, user_role
 #knoxJwtRealm.cookieName = hadoop-jwt
 #knoxJwtRealm.publicKeyPath = /etc/zeppelin/conf/knox-sso.pem
 #
-#knoxJwtRealm.groupPrincipalMapping = group.principal.mapping
-#knoxJwtRealm.principalMapping = principal.mapping
 #authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter
+
+### A sample for configuring Kerberos Realm
+# krbRealm = org.apache.zeppelin.realm.kerberos.KerberosRealm
+# krbRealm.principal = HTTP/zeppelin.fqdn.domain.com@EXAMPLE.COM
+# krbRealm.keytab = /etc/security/keytabs/spnego.service.keytab
+# krbRealm.nameRules = DEFAULT
+# krbRealm.signatureSecretFile = /etc/security/http_secret
+# krbRealm.tokenValidity = 36000
+# krbRealm.cookieDomain = domain.com
+# krbRealm.cookiePath = /
+# krbRealm.logout = /logout
+# krbRealm.logoutAPI = true
+# krbRealm.providerUrl = https://domain.example.com/
+# krbRealm.redirectParam = originalUrl
+# authc = org.apache.zeppelin.realm.kerberos.KerberosAuthenticationFilter
 
 sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
 
