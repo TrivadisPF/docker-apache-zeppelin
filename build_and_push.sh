@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TAG=0.10.1-spark3.3.2-hadoop3.3-java11
+TAG=0.10.1-spark3.3.2-hadoop3.3-java17
 
 docker build -t trivadis/apache-zeppelin:${TAG} .
 

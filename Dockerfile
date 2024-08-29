@@ -1,4 +1,4 @@
-FROM openjdk:11 AS sparkbuild
+FROM amazoncorretto:17-alpine3.17 AS sparkbuild
 
 ENV SPARK_VERSION=3.3.2
 ENV HADOOP_VERSION=3.3.6
@@ -7,6 +7,8 @@ ARG SPARK_BUILD_NAME='without-hadoop'
 ARG SPARK_BUILD_PROFILES='-Phive -Phive-thriftserver -Pyarn -Phadoop-provided -Dhadoop.version=3.3.6'
 
 ARG SPARK_SRC_URL=https://github.com/apache/spark/archive/refs/tags/v${SPARK_VERSION}.tar.gz
+
+RUN apk add --no-cache curl bash wget 
 
 RUN wget ${SPARK_SRC_URL} \
     && tar -xf v${SPARK_VERSION}.tar.gz \
